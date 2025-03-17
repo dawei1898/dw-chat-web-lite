@@ -3,7 +3,7 @@
 一个接入 DeepSeek-V3、DeepSeek-R1 大模型的纯前端极简聊天页面.
 
 
-演示地址：https://dw-chat-web-mini.vercel.app
+演示地址：https://dw-chat-mini-web.vercel.app
 
 
 #### 主要技术：
@@ -52,10 +52,6 @@ npm install @ant-design/x --save
 安装 Ant Design icon图标
 ```shell
 npm install @ant-design/icons --save
-```
-
-```shell
-npm install antd-style
 ```
 
 安装 ProComponents

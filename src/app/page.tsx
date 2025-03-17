@@ -1,6 +1,9 @@
+import Chat from "@/app/chat/chat";
 
 export default function Home() {
-  return (
-      <div>hello</div>
-  );
+    return (
+        <>
+            <Chat/>
+        </>
+    );
 }
