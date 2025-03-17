@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## DW Chat (dw-chat-mini)
 
-## Getting Started
+一个接入 DeepSeek-V3、DeepSeek-R1 大模型的纯前端极简聊天页面.
 
-First, run the development server:
+
+演示地址：https://dw-chat-web-mini.vercel.app
+
+
+#### 主要技术：
+
+1.DeepSeek-V3、DeepSeek-R1 LLM
+
+2.React 19
+
+3.NextJS 15
+
+4.Ant Design X
+
+5.tailwind SCC
+
+
+### 本地启动项目
+
+安装依赖
+```shell
+npm install
+```
+
+启动项目
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开项目 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+### 本项目用到的库
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+安装 Ant Design
+```shell
+npm install antd --save
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+安装 Ant Design X
+```shell
+npm install @ant-design/x --save
+```
 
-## Deploy on Vercel
+安装 Ant Design icon图标
+```shell
+npm install @ant-design/icons --save
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```shell
+npm install antd-style
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+安装 ProComponents
+```bash
+npm i @ant-design/pro-components --save
+```
+
+兼容 React 19
+```shell
+npm install --save-dev @ant-design/v5-patch-for-react-19
+```
+
+在应用入口处引入兼容包
+```ts
+import '@ant-design/v5-patch-for-react-19';
+```
+
+安装 @ant-design/nextjs-registry，解决antd组件页面闪动的情况
+```bash
+npm install @ant-design/nextjs-registry --save
+```
+
+安装 openai
+```shell
+npm install openai
+```
+
+安装 markdown-it
+```shell
+npm install markdown-it --save
+npm install @types/markdown-it --save-dev
+```
+
+代码高亮
+```shell
+npm install highlight.js
+```
+高亮样式
+```ts
+import 'highlight.js/styles/atom-one-light.css';
+```
