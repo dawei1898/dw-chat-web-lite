@@ -19,7 +19,7 @@ import {
 import {
     CopyOutlined, DislikeOutlined,
     GlobalOutlined, LikeOutlined,
-    NodeIndexOutlined,
+    NodeIndexOutlined, PaperClipOutlined,
     PlusOutlined, SendOutlined, UserOutlined,
 } from "@ant-design/icons";
 import '@ant-design/v5-patch-for-react-19'; // 兼容 React19
@@ -96,12 +96,15 @@ const ChatPage = () => {
 
     // 处理 logo 和标题文字的样式
     const menuHeaderRender = (logo: React.ReactNode, title: React.ReactNode, props?: SiderMenuProps) => {
-        return <Flex align='center'>
-            {logo}
-            {<span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+        return (
+            <Flex align='center'>
+                {logo}
+                {<span
+                    className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
                 {title}
             </span>}
-        </Flex>
+            </Flex>
+        )
     }
 
     // 开启新对话按钮
@@ -124,13 +127,11 @@ const ChatPage = () => {
                 </Tooltip>
                 :
                 <Button
+                    className='h-35 w-[calc(100%-25px)] ml-3 m-4'
                     style={{
                         backgroundColor: '#1677ff0f',
                         border: '1px solid #1677ff34',
                         borderRadius: '10px',
-                        width: 'calc(100% - 25px)',
-                        height: '35px',
-                        margin: '12px',
                     }}
                     type={'link'}
                     icon={<PlusOutlined/>}
@@ -167,11 +168,7 @@ const ChatPage = () => {
         return <>
             {!props.collapsed &&
                 <Conversations
-                    style={{
-                        padding: '0 12px',
-                        flex: '1',
-                        overflowY: 'auto',
-                    }}
+                    className='px-12 overflow-y-auto'
                     items={conversationsItems}
                     activeKey={activeKey}
                     onActiveChange={setActiveKey}
@@ -343,62 +340,66 @@ const ChatPage = () => {
         }];
 
 
-    /* 输入框自定义前缀 */
-    const PrefixNode = (
-        <Space
-            style={{
-                position: 'absolute',
-                zIndex: 1,
-                bottom: '10px',
-            }}
-        >
-            <Tooltip
-                title={openReasoner ? '' : '调用新模型 DeepSeek-R1，解决推理问题'}
-                placement='left'
-            >
-                <Button
-                    size='small'
-                    shape='round'
-                    type={openReasoner ? 'primary' : 'default'}
-                    onClick={() => setOpenReasoner(!openReasoner)}
-                >
-                    <NodeIndexOutlined />
-                    深度思考(R1)
-                </Button>
-            </Tooltip>
-            <Tooltip
-                title={openSearch ? '' : '按需搜索网页'}
-                placement='right'
-            >
-                <Button
-                    size='small'
-                    shape='round'
-                    type={openSearch ? 'primary' : 'default'}
-                    onClick={() => setOpenSearch(!openSearch)}
-                >
-                    <GlobalOutlined />
-                    联网搜索
-                </Button>
-            </Tooltip>
-        </Space>
-    );
+    /* 自定义发送框底部 */
+    const senderFooter =  ({components}: any) => {
+        const {SendButton, LoadingButton, SpeechButton} = components;
 
-
-    /* 自定义发送按钮 */
-    const senderActions: ActionsRender = (_, info) => {
-        const {SendButton, LoadingButton} = info.components;
         return (
-            agent.isRequesting() ? (
-                <Tooltip title='停止'>
-                    <LoadingButton/>
-                </Tooltip>
-            ) : (
-                <Tooltip title={inputTxt ? '发送' : '请输入你的问题'}>
-                    <SendButton icon={<SendOutlined rotate={315}/>}/>
-                </Tooltip>
-            )
-        )
-    };
+            <Flex justify='space-between' align='center'>
+                <Flex gap='small'>
+                    <Tooltip
+                        title={openReasoner ? '' : '调用新模型 DeepSeek-R1，解决推理问题'}
+                        placement='left'
+                    >
+                        <Button
+                            size='small'
+                            shape='round'
+                            type={openReasoner ? 'primary' : 'default'}
+                            onClick={() => setOpenReasoner(!openReasoner)}
+                        >
+                            <NodeIndexOutlined />
+                            深度思考(R1)
+                        </Button>
+                    </Tooltip>
+                    <Tooltip
+                        title={openSearch ? '' : '按需搜索网页'}
+                        placement='right'
+                    >
+                        <Button
+                            size='small'
+                            shape='round'
+                            type={openSearch ? 'primary' : 'default'}
+                            onClick={() => setOpenSearch(!openSearch)}
+                        >
+                            <GlobalOutlined />
+                            联网搜索
+                        </Button>
+                    </Tooltip>
+                </Flex>
+
+                <Flex  align='end' gap='small'>
+                    <Tooltip title={'上传附件'} placement='top'>
+                        <Button type='text' className='w-7'>
+                            <PaperClipOutlined rotate={135} style={{fontSize: '18px'}}/>
+                        </Button>
+                    </Tooltip>
+                    {
+                        !agent.isRequesting() ?
+                            (
+                                <Tooltip title={inputTxt ? '发送' : '请输入你的问题'}>
+                                    <SendButton/>
+                                </Tooltip>)
+                            : (
+                                <Tooltip title='停止'>
+                                    <LoadingButton/>
+                                </Tooltip>
+                            )
+                    }
+                </Flex>
+
+        </Flex>
+        );
+    }
 
 
     // 停止
@@ -452,23 +453,16 @@ const ChatPage = () => {
 
                         {/* 输入框 */}
                         <Sender
-                            style={{
-                                marginTop: 'auto',
-                                paddingBottom: '35px',
-                                borderRadius: '20px',
-                            }}
-                            styles={{
-                                input: {minHeight: 60},
-                                actions: {marginBottom: -35}
-                            }}
+                            className='mt-auto'
+                            autoSize={{ minRows: 2, maxRows: 8 }}
                             placeholder='请输入你的问题...'
                             loading={agent.isRequesting()}
                             value={inputTxt}
                             onChange={setInputTxt}
                             onSubmit={handleSubmit}
                             onCancel={handleCancel}
-                            actions={senderActions}
-                            prefix={PrefixNode}
+                            actions={false}
+                            footer={senderFooter}
                         />
                     </Flex>
                 </ProLayout>
