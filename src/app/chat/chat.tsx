@@ -20,14 +20,13 @@ import {
     CopyOutlined, DislikeOutlined,
     GlobalOutlined, LikeOutlined,
     NodeIndexOutlined, PaperClipOutlined,
-    PlusOutlined, SendOutlined, UserOutlined,
+    PlusOutlined, UserOutlined,
 } from "@ant-design/icons";
 import '@ant-design/v5-patch-for-react-19'; // 兼容 React19
 import {AntdRegistry} from "@ant-design/nextjs-registry";
-import {DeepSeekIcon} from "@/components/Icons";
+import {DeepSeekIcon, PanelLeftClose, PanelLeftOpen} from "@/components/Icons";
 import OpenAI from "openai";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
-import {ActionsRender} from "@ant-design/x/es/sender";
 import MarkdownRender from "@/app/chat/markdown-render";
 import InitWelcome from "@/app/chat/init-welcome";
 import Logo from "@/app/chat/logo";
@@ -75,6 +74,7 @@ const ChatPage = () => {
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
+    const [collapsed, setCollapsed] = useState(true);
 
 
     // 主题配置
@@ -93,6 +93,21 @@ const ChatPage = () => {
             paddingInlinePageContainerContent: 10, // 左右内距离
         },
     }
+
+    /* 侧边栏触发器 */
+    const SidebarTrigger = (
+        <Tooltip
+            title={collapsed ? '打开边栏' : '收起边栏'}
+            placement='right'
+        >
+            <Button
+                styles={{icon: {color: '#525252'}}}
+                type='text'
+                icon={collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+                onClick={() => setCollapsed(!collapsed)}
+            />
+        </Tooltip>
+    )
 
     // 处理 logo 和标题文字的样式
     const menuHeaderRender = (logo: React.ReactNode, title: React.ReactNode, props?: SiderMenuProps) => {
@@ -379,9 +394,10 @@ const ChatPage = () => {
 
                 <Flex  align='end' gap='small'>
                     <Tooltip title={'上传附件'} placement='top'>
-                        <Button type='text' className='w-7'>
-                            <PaperClipOutlined rotate={135} style={{fontSize: '18px'}}/>
-                        </Button>
+                        <Button
+                            type='text'
+                            icon={<PaperClipOutlined rotate={135} style={{fontSize: '18px'}}/>}
+                        />
                     </Tooltip>
                     {
                         !agent.isRequesting() ?
@@ -432,18 +448,26 @@ const ChatPage = () => {
                     siderWidth={250}
                     logo={<Logo/>}
                     title='Dw Chat Mini'
-                    menuHeaderRender={menuHeaderRender}
+                    menuHeaderRender={menuHeaderRender} // Logo Title
                     menuExtraRender={addConversationRender} // 开启新对话按钮
                     menuContentRender={conversationRender} // 会话管理
                     actionsRender={actionsRender}
                     avatarProps={avatarRender} // 用户头像
                     footerRender={() => (<Footer/>)}  // 页脚
+
+                    collapsedButtonRender={false} // 去掉默认侧边栏
+                    collapsed={collapsed}
+                    onCollapse={setCollapsed}
                 >
+                    <div className='fixed z-10 h-12 w-12'>
+                        {SidebarTrigger}
+                    </div>
+
                     <Flex
                         vertical
                         gap={'large'}
                         className='w-full max-w-2xl'
-                        style={{ margin: '1px auto', height: '95vh'}}
+                        style={{margin: '1px auto', height: '95vh'}}
                     >
                         {/* 消息列表 */}
                         <Bubble.List
@@ -454,7 +478,7 @@ const ChatPage = () => {
                         {/* 输入框 */}
                         <Sender
                             className='mt-auto'
-                            autoSize={{ minRows: 2, maxRows: 8 }}
+                            autoSize={{minRows: 2, maxRows: 8}}
                             placeholder='请输入你的问题...'
                             loading={agent.isRequesting()}
                             value={inputTxt}
