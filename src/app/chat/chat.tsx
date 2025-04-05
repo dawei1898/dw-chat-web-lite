@@ -116,8 +116,8 @@ const ChatPage = () => {
                 {logo}
                 {<span
                     className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-                {title}
-            </span>}
+                    {title}
+                </span>}
             </Flex>
         )
     }
@@ -133,7 +133,7 @@ const ChatPage = () => {
                             border: '1px solid #1677ff34',
                             borderRadius: '10px',
                             width: ' 35px',
-                            margin: '10px -7px',
+                            margin: '5px -7px',
                         }}
                         type='link'
                         icon={<PlusOutlined/>}
