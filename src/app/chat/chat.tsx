@@ -24,7 +24,7 @@ import {
 } from "@ant-design/icons";
 import '@ant-design/v5-patch-for-react-19'; // 兼容 React19
 import {AntdRegistry} from "@ant-design/nextjs-registry";
-import DeepSeekIcon from "@/app/chat/deep-seek-icon";
+import {DeepSeekIcon} from "@/components/Icons";
 import OpenAI from "openai";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
 import {ActionsRender} from "@ant-design/x/es/sender";
@@ -94,15 +94,26 @@ const ChatPage = () => {
         },
     }
 
+    // 处理 logo 和标题文字的样式
+    const menuHeaderRender = (logo: React.ReactNode, title: React.ReactNode, props?: SiderMenuProps) => {
+        return <Flex align='center'>
+            {logo}
+            {<span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+                {title}
+            </span>}
+        </Flex>
+    }
+
     // 开启新对话按钮
     const addConversationRender = (props: SiderMenuProps) => {
         return <>
             {props.collapsed ?
-                <Tooltip title='开启新对话'>
+                <Tooltip title='开启新对话' placement='right'>
                     <Button
                         style={{
                             backgroundColor: '#1677ff0f',
                             border: '1px solid #1677ff34',
+                            borderRadius: '10px',
                             width: ' 35px',
                             margin: '10px -7px',
                         }}
@@ -116,6 +127,7 @@ const ChatPage = () => {
                     style={{
                         backgroundColor: '#1677ff0f',
                         border: '1px solid #1677ff34',
+                        borderRadius: '10px',
                         width: 'calc(100% - 25px)',
                         height: '35px',
                         margin: '12px',
@@ -177,7 +189,7 @@ const ChatPage = () => {
     const avatarRender: ProLayoutProps['avatarProps'] = {
         icon: (<UserOutlined/>),
         size: 'small',
-        title: '大伟',
+        title: 'dawei',
         render: (_: any, avatarChildren: React.ReactNode) => {
             return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
         },
@@ -418,7 +430,8 @@ const ChatPage = () => {
                     layout={'side'}
                     siderWidth={250}
                     logo={<Logo/>}
-                    title='DwChat'
+                    title='Dw Chat Mini'
+                    menuHeaderRender={menuHeaderRender}
                     menuExtraRender={addConversationRender} // 开启新对话按钮
                     menuContentRender={conversationRender} // 会话管理
                     actionsRender={actionsRender}
