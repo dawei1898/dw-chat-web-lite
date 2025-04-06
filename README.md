@@ -93,3 +93,8 @@ npm install highlight.js
 ```ts
 import 'highlight.js/styles/atom-one-light.css';
 ```
+
+复制
+```shell
+npm install clipboard-polyfill
+```

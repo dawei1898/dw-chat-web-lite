@@ -14,10 +14,10 @@ import {
     Button, GetProp, Space,
     message as apiMessage,
     Tooltip, theme,
-    ThemeConfig, Flex
+    ThemeConfig, Flex, Modal, Input
 } from "antd";
 import {
-    CopyOutlined, DislikeOutlined,
+    CopyOutlined, DeleteOutlined, DislikeOutlined, EditOutlined,
     GlobalOutlined, LikeOutlined,
     NodeIndexOutlined, PaperClipOutlined,
     PlusOutlined, UserOutlined,
@@ -38,6 +38,8 @@ import HeaderActions from "@/app/chat/header-actions";
 import type {ProTokenType} from "@ant-design/pro-provider";
 import {SiderMenuProps} from "@ant-design/pro-layout/es/components/SiderMenu/SiderMenu";
 import type {HeaderViewProps} from "@ant-design/pro-layout/es/components/Header";
+import {Conversation} from "@ant-design/x/es/conversations";
+import {writeText} from "clipboard-polyfill";
 
 
 // 动态导入
@@ -74,7 +76,7 @@ const ChatPage = () => {
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
-    const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(false);
 
 
     // 主题配置
@@ -101,7 +103,7 @@ const ChatPage = () => {
             placement='right'
         >
             <Button
-                styles={{icon: {color: '#525252'}}}
+                styles={{icon: {color: '#676767'}}}
                 type='text'
                 icon={collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
                 onClick={() => setCollapsed(!collapsed)}
@@ -177,6 +179,70 @@ const ChatPage = () => {
         setActiveKey(`${conversationsItems.length + 1}`);
     };
 
+    // 会话编辑
+    const menuConfig: ConversationsProps['menu'] = (conversation) => ({
+        items: [
+            {
+                label: '重命名',
+                key: 'rename',
+                icon: <EditOutlined />,
+            },
+            {
+                label: '删除',
+                key: 'delete',
+                icon: <DeleteOutlined />,
+                danger: true,
+            },
+        ],
+        onClick: (menuInfo) => {
+            menuInfo.domEvent.stopPropagation();
+            let updatedConversations: Conversation[];
+            // 重命名会话
+            if (menuInfo.key === 'rename') {
+                Modal.confirm({
+                    title: '重命名会话',
+                    content: (
+                        <Input
+                            placeholder="请输入新的会话名称"
+                            defaultValue={conversation.label?.toString()}
+                            onChange={(e) => {
+                                const newLabel = e.target.value;
+                                updatedConversations = conversationsItems.map((item) =>
+                                    item.key === conversation.key ? { ...item, label: newLabel } : item
+                                );
+                            }}
+                        />
+                    ),
+                    onOk: () => {
+                        setConversationsItems(updatedConversations);
+                        apiMessage.success('重命名成功');
+                    },
+                    onCancel: () => {
+                        apiMessage.info('取消重命名');
+                    },
+                });
+            }
+            // 删除会话
+            if (menuInfo.key === 'delete') {
+                Modal.confirm({
+                    title: '删除会话',
+                    content: '确认删除该会话吗？',
+                    onOk: () => {
+                        // 过滤掉当前选中的会话项
+                        const updatedConversations = conversationsItems.filter(
+                            (item) => item.key !== conversation.key
+                        );
+                        setConversationsItems(updatedConversations);
+                        // 如果删除的是当前激活的会话，重置 activeKey
+                        if (activeKey === conversation.key) {
+                            setActiveKey(updatedConversations.length > 0 ? updatedConversations[0].key : '');
+                        }
+                        apiMessage.success('删除成功')
+                    }
+                });
+            }
+        },
+    });
 
     // 会话管理列表
     const conversationRender = (props: SiderMenuProps, defaultDom: React.ReactNode) => {
@@ -185,6 +251,7 @@ const ChatPage = () => {
                 <Conversations
                     className='px-12 overflow-y-auto'
                     items={conversationsItems}
+                    menu={menuConfig}
                     activeKey={activeKey}
                     onActiveChange={setActiveKey}
                 />
@@ -283,9 +350,8 @@ const ChatPage = () => {
     }, [model]);
 
 
-
-    const MessageFooter = (
-        <Space>
+    const MessageFooter = (props: {message: string}) => {
+        return <Space>
             <Tooltip title='喜欢'>
                 <Button
                     size={'small'} type={'text'} icon={<LikeOutlined/>}
@@ -301,31 +367,35 @@ const ChatPage = () => {
             <Tooltip title='复制'>
                 <Button
                     size={'small'} type={'text'} icon={<CopyOutlined/>}
-                    onClick={() => apiMessage.success('已复制')}
+                    onClick={() => {
+                        writeText(props.message);
+                        apiMessage.success('已复制');
+                    }}
                 />
             </Tooltip>
         </Space>
-    )
+    }
+
 
 
     // 角色格式设定
     const roles: GetProp<typeof Bubble.List, 'roles'> = {
         ai: {
             placement: 'start',
+            variant: 'outlined',
             avatar: {icon: <DeepSeekIcon/>, style: {border: '1px solid #c5eaee', backgroundColor: 'white'}},
-            footer: !agent.isRequesting() && MessageFooter,
+            //footer: !agent.isRequesting() && MessageFooter,
             typing: {step: 5, interval: 50},
             messageRender: (content) => (<MarkdownRender content={content}/>),
             style: {
                 maxWidth: 700,
             },
-            /*styles: {
-                footer: {marginLeft: "auto"}
-            }*/
+            styles: {
+                //content: {border: "none"}
+            }
         },
         user: {
             placement: 'end',
-            variant: 'outlined',
         },
     };
 
@@ -336,6 +406,9 @@ const ChatPage = () => {
             content: message,
             role: status === 'local' ? 'user' : 'ai',
             loading: status === 'loading' && requestLoading,
+            footer: ((!agent.isRequesting() && status !== 'local') &&
+                <MessageFooter message={message}/>
+            ),
         }));
 
     // 发送消息
@@ -392,11 +465,11 @@ const ChatPage = () => {
                     </Tooltip>
                 </Flex>
 
-                <Flex  align='end' gap='small'>
+                <Flex  align='center' gap='small'>
                     <Tooltip title={'上传附件'} placement='top'>
                         <Button
                             type='text'
-                            icon={<PaperClipOutlined rotate={135} style={{fontSize: '18px'}}/>}
+                            icon={<PaperClipOutlined rotate={135} style={{fontSize: '18px', marginTop: '7px'}}/>}
                         />
                     </Tooltip>
                     {
@@ -459,15 +532,15 @@ const ChatPage = () => {
                     collapsed={collapsed}
                     onCollapse={setCollapsed}
                 >
-                    <div className='fixed z-10 h-12 w-12'>
+                    {<div className='fixed z-10 h-12 w-12'>
                         {SidebarTrigger}
-                    </div>
+                    </div>}
 
                     <Flex
                         vertical
                         gap={'large'}
                         className='w-full max-w-2xl'
-                        style={{margin: '1px auto', height: '95vh'}}
+                        style={{margin: '0px auto', height: '94.5vh'}}
                     >
                         {/* 消息列表 */}
                         <Bubble.List
