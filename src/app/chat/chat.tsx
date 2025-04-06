@@ -532,9 +532,9 @@ const ChatPage = () => {
                     collapsed={collapsed}
                     onCollapse={setCollapsed}
                 >
-                    {<div className='fixed z-10 h-12 w-12'>
+                    <div className='fixed z-10 h-12 w-12'>
                         {SidebarTrigger}
-                    </div>}
+                    </div>
 
                     <Flex
                         vertical
@@ -550,7 +550,7 @@ const ChatPage = () => {
 
                         {/* 输入框 */}
                         <Sender
-                            className='mt-auto'
+                            style={{marginTop: 'auto', borderRadius: '20px'}}
                             autoSize={{minRows: 2, maxRows: 8}}
                             placeholder='请输入你的问题...'
                             loading={agent.isRequesting()}
