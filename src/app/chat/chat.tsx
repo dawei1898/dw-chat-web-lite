@@ -64,6 +64,11 @@ const client = new OpenAI({
     dangerouslyAllowBrowser: true,
 });
 
+export type AgentMessage = {
+    content?: string;
+    reasoningContent?: string;
+};
+
 
 const ChatPage = () => {
     const {token} = useToken();
@@ -93,7 +98,7 @@ const ChatPage = () => {
         pageContainer: {
             colorBgPageContainer: dark ? '' : token.colorBgBase,
             paddingBlockPageContainerContent: 10,  // 上下内距离
-            paddingInlinePageContainerContent: 10, // 左右内距离
+            paddingInlinePageContainerContent: 5, // 左右内距离
         },
     }
 
@@ -282,21 +287,27 @@ const ChatPage = () => {
     /**
      * 与大模型交互
      */
-    const [agent] = useXAgent({
+    const [agent] = useXAgent<AgentMessage>({
         request: async (info, callbacks) => {
             const {message, messages} = info
             const {onUpdate, onSuccess, onError} = callbacks
-            console.log('message', message)
-            console.log('message list', messages)
-            console.log('model:', modelRef.current)
+            console.log('message: ', message)
+            console.log('message list: ', messages)
+            console.log('model: ', modelRef.current)
 
             let content = ''
-            let reasoningContent: string = '==========  思考开始  ==========\n'
+            //let reasoningContent: string = '==========  思考开始  ==========\n'
+            let reasoningContent: string = ''
             let reasoningOver: boolean = false
+
+            const aiMessage: AgentMessage = {
+                content: '',
+                reasoningContent: '',
+            }
             try {
                 const streamCompletions = await client.chat.completions.create({
                         model: modelRef.current,
-                        messages: [{role: 'user', content: message || ''}],
+                        messages: [{role: 'user', content: message?.content || ''}],
                         stream: true
                     },
                     {
@@ -306,8 +317,17 @@ const ChatPage = () => {
                     setRequestLoading(false);
                     const reasoning_content: string = (chunk.choices[0]?.delta as any)?.reasoning_content
                     const resp_content: any = chunk.choices[0]?.delta?.content
-
                     // 思考中
+                    if (reasoning_content) {
+                        aiMessage.reasoningContent += reasoning_content;
+                    }
+                    // 回答
+                    if (resp_content) {
+                        aiMessage.content += resp_content;
+                    }
+                    onUpdate(aiMessage)
+
+                    /*// 思考中
                     if (reasoning_content) {
                         reasoningContent += reasoning_content;
                         content = reasoningContent;
@@ -315,7 +335,8 @@ const ChatPage = () => {
                     // 思考结束
                     else if (modelRef.current === MODEL_REASONER
                         && resp_content && !reasoningOver) {
-                        reasoningContent += '\n==========  思考结束  ==========\n\n\n';
+                        //reasoningContent += '\n==========  思考结束  ==========\n\n\n';
+                        reasoningContent += '=====';
                         content = reasoningContent;
                         reasoningOver = true;
                         console.log('思考结束。')
@@ -324,10 +345,11 @@ const ChatPage = () => {
                     if (resp_content) {
                         content += resp_content;
                     }
-                    onUpdate(content);
+                    onUpdate(content);*/
                 }
 
-                onSuccess(content);
+                //onSuccess(content);
+                onSuccess(aiMessage)
             } catch (e) {
                 console.log('error', e);
                 onError(e as Error);
@@ -339,7 +361,9 @@ const ChatPage = () => {
 
     const {onRequest, messages, setMessages} = useXChat({
         agent: agent,
-        requestPlaceholder: '请求中...',
+        requestPlaceholder: {
+            content: '请求中...'
+        },
     });
 
     useEffect(() => {
@@ -353,8 +377,59 @@ const ChatPage = () => {
         modelRef.current = model;
     }, [model]);
 
+    const convertContent = (str: string) => {
+        if (!str) {
+            return ''
+        }
+        const parts = str.split('=====');
+        return parts.length > 1 ? parts[0] : str;
+    }
 
-    const MessageFooter = (props: {message: string}) => {
+    const convertReasoningContent = (str: string) => {
+        if (!str) {
+            return ''
+        }
+        const parts = str.split('=====');
+        return parts.length > 1 ? parts[0] : str;
+    }
+
+
+
+    /**
+     * 思考过程
+     */
+    const MessageHeader = ({reasoningContent}: {reasoningContent: string} ) => {
+        const [open, setOpen] = useState<boolean>(true)
+
+        return (reasoningContent &&
+            <Flex vertical>
+                <Button
+                    style={{
+                        width: '130px',
+                        marginBottom: '5px',
+                        borderRadius: token.borderRadiusLG,
+                    }}
+                    color="default"
+                    variant="filled"
+                    onClick={() => setOpen(!open)}
+                >
+                    <NodeIndexOutlined/>
+                    {'深度思考'}
+                    {open ? <UpOutlined style={{fontSize: '10px'}}/>
+                        : <DownOutlined style={{fontSize: '10px'}}/>}
+                </Button>
+                {open &&
+                    <div className='max-w-[600px] border-l-2 border-l-gray-100 my-2 mr-2 pl-4'>
+                        <Typography.Text type='secondary'>
+                            {reasoningContent}
+                        </Typography.Text>
+                    </div>
+                }
+            </Flex>
+        )
+    }
+
+    const MessageFooter = ({message}: {message: string}) => {
         return <Space>
             <Tooltip title='喜欢'>
                 <Button
@@ -372,7 +447,7 @@ const ChatPage = () => {
                 <Button
                     size={'small'} type={'text'} icon={<CopyOutlined/>}
                     onClick={() => {
-                        writeText(props.message);
+                        writeText(message);
                         apiMessage.success('已复制');
                     }}
                 />
@@ -383,7 +458,7 @@ const ChatPage = () => {
 
 
     // 角色格式设定
-    const roles: GetProp<typeof Bubble.List, 'roles'> = {
+    /*const roles: GetProp<typeof Bubble.List, 'roles'> = {
         ai: {
             placement: 'start',
             variant: 'outlined',
@@ -401,23 +476,36 @@ const ChatPage = () => {
         user: {
             placement: 'end',
         },
-    };
+    };*/
 
     const messageItems = messages.map((
         {id, message, status}) =>
         ({
             key: id,
-            content: message,
+            content: message.content || '',
             role: status === 'local' ? 'user' : 'ai',
             loading: status === 'loading' && requestLoading,
+            header: (status !== 'local' && <MessageHeader reasoningContent={message.reasoningContent || ''}/>),
             footer: ((!agent.isRequesting() && status !== 'local') &&
-                <MessageFooter message={message}/>
+                <MessageFooter message={message.content || ''}/>
             ),
+            placement: status !== 'local' ? 'start' : 'end',
+            variant: status !== 'local' ? (message.content ? 'outlined' : 'borderless') : undefined,
+            avatar: status !== 'local' ?
+                {
+                    icon: <DeepSeekIcon/>,
+                    style: {border: '1px solid #c5eaee', backgroundColor: 'white'}
+                } : undefined,
+            typing: status !== 'local' && (status === 'loading' && requestLoading) ?
+                {step: 5, interval: 50} : undefined,
+            style: status !== 'local' ? {maxWidth: 700} : undefined,
+            messageRender: status !== 'local' ?
+                ((content: any) => (<MarkdownRender content={content}/>)) : undefined,
         }));
 
     // 发送消息
     const handleSubmit = (msg: string) => {
-        onRequest(msg);
+        onRequest({content: msg});
         setInputTxt('');
         setRequestLoading(true);
         if (!activeKey) {
@@ -425,6 +513,7 @@ const ChatPage = () => {
         }
     }
 
+    // @ts-ignore
     const finalMessageItems: BubbleDataType[] = messageItems.length > 0 ? messageItems
         : [{
             content: (<InitWelcome handleSubmit={handleSubmit}/>),
@@ -550,7 +639,7 @@ const ChatPage = () => {
                         <div className='h-full w-full px-1 overflow-y-auto scrollbar-container'>
                             <Bubble.List
                                 className='max-w-2xl  mx-auto'
-                                roles={roles}
+                                //roles={roles}
                                 items={finalMessageItems}
                             />
                         </div>

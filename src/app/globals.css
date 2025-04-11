@@ -35,12 +35,12 @@ body {
 
 /* 自定义滚动条的样式 */
 .scrollbar-container::-webkit-scrollbar {
-  width: 5px; /* 滚动条的宽度 */
+  width: 7px; /* 滚动条的宽度 */
 }
 
 /* 滚动条滑块样式 */
 .scrollbar-container::-webkit-scrollbar-thumb {
-  border-radius: 3px;
+  border-radius: 5px;
   background: none;
 }
 
