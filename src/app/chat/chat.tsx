@@ -14,13 +14,14 @@ import {
     Button, GetProp, Space,
     message as apiMessage,
     Tooltip, theme,
-    ThemeConfig, Flex, Modal, Input
+    ThemeConfig, Flex, Modal, Input,
+    Typography
 } from "antd";
 import {
-    CopyOutlined, DeleteOutlined, DislikeOutlined, EditOutlined,
+    CopyOutlined, DeleteOutlined, DislikeOutlined, DownOutlined, EditOutlined,
     GlobalOutlined, LikeOutlined,
     NodeIndexOutlined, PaperClipOutlined,
-    PlusOutlined, UserOutlined,
+    PlusOutlined, UpOutlined, UserOutlined,
 } from "@ant-design/icons";
 import '@ant-design/v5-patch-for-react-19'; // 兼容 React19
 import {AntdRegistry} from "@ant-design/nextjs-registry";
@@ -225,8 +226,10 @@ const ChatPage = () => {
             // 删除会话
             if (menuInfo.key === 'delete') {
                 Modal.confirm({
-                    title: '删除会话',
-                    content: '确认删除该会话吗？',
+                    title: '永久删除对话',
+                    content: '删除后，该对话不可恢复，确认删除吗？',
+                    okType: 'danger',
+                    okText: '删除',
                     onOk: () => {
                         // 过滤掉当前选中的会话项
                         const updatedConversations = conversationsItems.filter(
@@ -248,15 +251,16 @@ const ChatPage = () => {
     const conversationRender = (props: SiderMenuProps, defaultDom: React.ReactNode) => {
         return <>
             {!props.collapsed &&
-                <Conversations
-                    className='px-12 overflow-y-auto'
-                    items={conversationsItems}
-                    menu={menuConfig}
-                    activeKey={activeKey}
-                    onActiveChange={setActiveKey}
-                />
-            }
-        </>
+                <div className='h-full px-1 overflow-y-auto scrollbar-container'>
+                    <Conversations
+                        items={conversationsItems}
+                        menu={menuConfig}
+                        activeKey={activeKey}
+                        onActiveChange={setActiveKey}
+                    />
+                </div>
+    }
+    </>
     }
 
     // actionsRender
@@ -539,17 +543,21 @@ const ChatPage = () => {
                     <Flex
                         vertical
                         gap={'large'}
-                        className='w-full max-w-2xl'
+                        className='w-full'
                         style={{margin: '0px auto', height: '94.5vh'}}
                     >
                         {/* 消息列表 */}
-                        <Bubble.List
-                            roles={roles}
-                            items={finalMessageItems}
-                        />
+                        <div className='h-full w-full px-1 overflow-y-auto scrollbar-container'>
+                            <Bubble.List
+                                className='max-w-2xl  mx-auto'
+                                roles={roles}
+                                items={finalMessageItems}
+                            />
+                        </div>
 
                         {/* 输入框 */}
                         <Sender
+                            className='max-w-2xl mx-auto'
                             style={{marginTop: 'auto', borderRadius: '20px'}}
                             autoSize={{minRows: 2, maxRows: 8}}
                             placeholder='请输入你的问题...'

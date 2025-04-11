@@ -30,3 +30,27 @@ body {
 .ant-pro-sider .ant-pro-sider-logo {
   border-bottom: none !important;
 }
+
+
+
+/* 自定义滚动条的样式 */
+.scrollbar-container::-webkit-scrollbar {
+  width: 5px; /* 滚动条的宽度 */
+}
+
+/* 滚动条滑块样式 */
+.scrollbar-container::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: none;
+}
+
+/* 鼠标悬停在作用区域上，滚动条滑块变为可见 */
+.scrollbar-container:hover::-webkit-scrollbar-thumb {
+  background: #c9c8c8;
+}
+
+/* 鼠标悬停滚动条滑块，改变颜色 */
+.scrollbar-container::-webkit-scrollbar-thumb:hover {
+  background-color: #a19f9f;
+  border-radius: 10px;
+}
