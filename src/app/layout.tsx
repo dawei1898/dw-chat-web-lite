@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DwChat Mini",
-  description: "DwChat Mini App",
+  title: "Dw Chat Lite",
+  description: "Dw Chat Lite App",
 };
 
 export default function RootLayout({

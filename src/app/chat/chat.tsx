@@ -613,7 +613,7 @@ const ChatPage = () => {
                     layout={'side'}
                     siderWidth={250}
                     logo={<Logo/>}
-                    title='Dw Chat Mini'
+                    title='Dw Chat Lite'
                     menuHeaderRender={menuHeaderRender} // Logo Title
                     menuExtraRender={addConversationRender} // 开启新对话按钮
                     menuContentRender={conversationRender} // 会话管理

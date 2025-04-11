@@ -30,7 +30,7 @@ const HeaderActions = (props: HeaderActions) => {
         /* Github */
         <Link
             key='github_link'
-            href='https://github.com/dawei1898/dw-chat-mini-web'
+            href='https://github.com/dawei1898/dw-chat-web-lite'
             target="_blank"
         >
             <Button key='github' type='text' shape='circle'>
