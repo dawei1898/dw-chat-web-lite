@@ -5,6 +5,8 @@
 
 演示地址：https://dw-chat-web-lite.vercel.app
 
+效果图：
+![demo2.png](public/demo2.png)
 
 #### 主要技术：
 
@@ -17,6 +19,15 @@
 4.Ant Design X
 
 5.tailwind SCC
+
+
+### 项目结构
+
+dw-chat-web-lite：纯前端版工程     Github：https://github.com/dawei1898/dw-chat-web-lite
+
+dw-chat-web：前端工程        Github：https://github.com/dawei1898/dw-chat-web
+
+dw-chat：后端工程        Github：https://github.com/dawei1898/dw-chat
 
 
 ### 本地启动项目
