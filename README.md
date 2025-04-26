@@ -3,7 +3,7 @@
 一个接入 DeepSeek-V3、DeepSeek-R1 大模型的纯前端 AI 对话页面.
 
 
-演示地址：https://dw-chat-web-lite.dw1898.top
+演示地址：https://dw-chat-lite.dw1898.top
 
 效果图：
 ![demo2.png](public/demo2.png)
@@ -28,6 +28,8 @@ dw-chat-web-lite：纯前端版工程     Github：https://github.com/dawei1898/
 dw-chat-web：前端工程        Github：https://github.com/dawei1898/dw-chat-web
 
 dw-chat：后端工程        Github：https://github.com/dawei1898/dw-chat
+
+dw-chat-next：next 全栈版工程      Github：https://github.com/dawei1898/dw-chat-next
 
 
 ### 本地启动项目
