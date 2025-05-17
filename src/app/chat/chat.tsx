@@ -55,8 +55,11 @@ const defaultConversationsItems: GetProp<ConversationsProps, 'items'> = []
 /**
  * DeepSeek大模型配置
  */
-const MODEL_CHAT = 'deepseek-chat'
-const MODEL_REASONER = 'deepseek-reasoner'
+/*const MODEL_CHAT = 'deepseek-chat'
+const MODEL_REASONER = 'deepseek-reasoner'*/
+
+const MODEL_CHAT = process.env.NEXT_PUBLIC_DEEPSEEK_CHAT_MODEL || ''
+const MODEL_REASONER = process.env.NEXT_PUBLIC_DEEPSEEK_REASONERT_MODEL || ''
 
 const client = new OpenAI({
     baseURL: process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL,
@@ -315,7 +318,7 @@ const ChatPage = () => {
                     });
                 for await (let chunk of streamCompletions) {
                     setRequestLoading(false);
-                    const reasoning_content: string = (chunk.choices[0]?.delta as any)?.reasoning_content
+                    const reasoning_content: string = (chunk.choices[0]?.delta as any)?.reasoning_content || (chunk.choices[0]?.delta as any)?.reasoning
                     const resp_content: any = chunk.choices[0]?.delta?.content
                     // 思考中
                     if (reasoning_content) {
