@@ -41,6 +41,8 @@ import {SiderMenuProps} from "@ant-design/pro-layout/es/components/SiderMenu/Sid
 import type {HeaderViewProps} from "@ant-design/pro-layout/es/components/Header";
 import {Conversation} from "@ant-design/x/es/conversations";
 import {writeText} from "clipboard-polyfill";
+import ChatProvider, {useChat} from "@/provider/chat-provider";
+import SidebarTrigger from "@/components/sidebar-trigger";
 
 
 // 动态导入
@@ -85,7 +87,8 @@ const ChatPage = () => {
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
-    const [collapsed, setCollapsed] = useState(false);
+    //const [collapsed, setCollapsed] = useState(false);
+    const {open, setOpen} = useChat();
 
 
     // 主题配置
@@ -104,21 +107,6 @@ const ChatPage = () => {
             paddingInlinePageContainerContent: 5, // 左右内距离
         },
     }
-
-    /* 侧边栏触发器 */
-    const SidebarTrigger = (
-        <Tooltip
-            title={collapsed ? '打开边栏' : '收起边栏'}
-            placement='right'
-        >
-            <Button
-                styles={{icon: {color: '#676767'}}}
-                type='text'
-                icon={collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
-                onClick={() => setCollapsed(!collapsed)}
-            />
-        </Tooltip>
-    )
 
     // 处理 logo 和标题文字的样式
     const menuHeaderRender = (logo: React.ReactNode, title: React.ReactNode, props?: SiderMenuProps) => {
@@ -625,11 +613,11 @@ const ChatPage = () => {
                     footerRender={() => (<Footer/>)}  // 页脚
 
                     collapsedButtonRender={false} // 去掉默认侧边栏
-                    collapsed={collapsed}
-                    onCollapse={setCollapsed}
+                    collapsed={open}
+                    onCollapse={setOpen}
                 >
                     <div className='fixed z-10 h-12 w-12'>
-                        {SidebarTrigger}
+                        <SidebarTrigger/>
                     </div>
 
                     <Flex
