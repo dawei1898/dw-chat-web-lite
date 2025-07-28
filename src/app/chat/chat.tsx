@@ -25,7 +25,7 @@ import {
 } from "@ant-design/icons";
 import '@ant-design/v5-patch-for-react-19'; // 兼容 React19
 import {AntdRegistry} from "@ant-design/nextjs-registry";
-import {DeepSeekIcon, PanelLeftClose, PanelLeftOpen} from "@/components/Icons";
+import {DeepSeekIcon} from "@/components/Icons";
 import OpenAI from "openai";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
 import MarkdownRender from "@/app/chat/markdown-render";
@@ -41,7 +41,7 @@ import {SiderMenuProps} from "@ant-design/pro-layout/es/components/SiderMenu/Sid
 import type {HeaderViewProps} from "@ant-design/pro-layout/es/components/Header";
 import {Conversation} from "@ant-design/x/es/conversations";
 import {writeText} from "clipboard-polyfill";
-import ChatProvider, {useChat} from "@/provider/chat-provider";
+import {useChat} from "@/provider/chat-provider";
 import SidebarTrigger from "@/components/sidebar-trigger";
 
 
@@ -87,7 +87,6 @@ const ChatPage = () => {
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
-    //const [collapsed, setCollapsed] = useState(false);
     const {open, setOpen} = useChat();
 
 
@@ -286,11 +285,6 @@ const ChatPage = () => {
             console.log('message list: ', messages)
             console.log('model: ', modelRef.current)
 
-            let content = ''
-            //let reasoningContent: string = '==========  思考开始  ==========\n'
-            let reasoningContent: string = ''
-            let reasoningOver: boolean = false
-
             const aiMessage: AgentMessage = {
                 content: '',
                 reasoningContent: '',
@@ -317,29 +311,8 @@ const ChatPage = () => {
                         aiMessage.content += resp_content;
                     }
                     onUpdate(aiMessage)
-
-                    /*// 思考中
-                    if (reasoning_content) {
-                        reasoningContent += reasoning_content;
-                        content = reasoningContent;
-                    }
-                    // 思考结束
-                    else if (modelRef.current === MODEL_REASONER
-                        && resp_content && !reasoningOver) {
-                        //reasoningContent += '\n==========  思考结束  ==========\n\n\n';
-                        reasoningContent += '=====';
-                        content = reasoningContent;
-                        reasoningOver = true;
-                        console.log('思考结束。')
-                    }
-                    // 回答
-                    if (resp_content) {
-                        content += resp_content;
-                    }
-                    onUpdate(content);*/
                 }
 
-                //onSuccess(content);
                 onSuccess(aiMessage)
             } catch (e) {
                 console.log('error', e);
@@ -367,22 +340,6 @@ const ChatPage = () => {
     useEffect(() => {
         modelRef.current = model;
     }, [model]);
-
-    const convertContent = (str: string) => {
-        if (!str) {
-            return ''
-        }
-        const parts = str.split('=====');
-        return parts.length > 1 ? parts[0] : str;
-    }
-
-    const convertReasoningContent = (str: string) => {
-        if (!str) {
-            return ''
-        }
-        const parts = str.split('=====');
-        return parts.length > 1 ? parts[0] : str;
-    }
 
 
 
@@ -446,28 +403,6 @@ const ChatPage = () => {
         </Space>
     }
 
-
-
-    // 角色格式设定
-    /*const roles: GetProp<typeof Bubble.List, 'roles'> = {
-        ai: {
-            placement: 'start',
-            variant: 'outlined',
-            avatar: {icon: <DeepSeekIcon/>, style: {border: '1px solid #c5eaee', backgroundColor: 'white'}},
-            //footer: !agent.isRequesting() && MessageFooter,
-            typing: {step: 5, interval: 50},
-            messageRender: (content) => (<MarkdownRender content={content}/>),
-            style: {
-                maxWidth: 700,
-            },
-            styles: {
-                //content: {border: "none"}
-            }
-        },
-        user: {
-            placement: 'end',
-        },
-    };*/
 
     const messageItems = messages.map((
         {id, message, status}) =>
