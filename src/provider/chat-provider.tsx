@@ -7,6 +7,8 @@ import React, {createContext, useEffect, useState} from 'react';
 interface ChatContextType {
     open: boolean;
     setOpen: (val: boolean) => void;
+    activeKey: string;
+    setActiveKey: (val: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -27,10 +29,13 @@ const ChatProvider = (
 ) => {
 
     const [collapsed, setCollapsed] = useState(false);
+    const [activeValue, setActiveValue] = useState<string>('')
 
     const value = {
         open: collapsed,
         setOpen: setCollapsed,
+        activeKey: activeValue,
+        setActiveKey: setActiveValue,
     }
 
     return (
