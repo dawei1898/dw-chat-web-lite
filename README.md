@@ -21,15 +21,19 @@
 5.tailwind SCC
 
 
-### 项目结构
+### 项目系列生态
 
-dw-chat-web-lite：纯前端版工程     Github：https://github.com/dawei1898/dw-chat-web-lite
+Dw Chat 项目完整的生态包括以下项目版本：
 
-dw-chat-web：前端工程        Github：https://github.com/dawei1898/dw-chat-web
+| 工程名称             | 描述            | GitHub 地址                                     |
+|------------------|---------------|-----------------------------------------------|
+| dw-chat-web-lite | 纯前端版工程        | https://github.com/dawei1898/dw-chat-web-lite |
+| dw-chat-web      | Next.js 前端工程  | https://github.com/dawei1898/dw-chat-web      |
+| dw-chat-web-vue  | Vue3 前端工程     | https://github.com/dawei1898/dw-chat-web-vue  |
+| dw-chat          | Java 后端工程     | https://github.com/dawei1898/dw-chat          |
+| dw-chat-next     | Next.js 全栈版工程 | https://github.com/dawei1898/dw-chat-next     |
+| dw-chat-nest     | NestJS 后端工程   | https://github.com/dawei1898/dw-chat-nest     |
 
-dw-chat：后端工程        Github：https://github.com/dawei1898/dw-chat
-
-dw-chat-next：next 全栈版工程      Github：https://github.com/dawei1898/dw-chat-next
 
 
 ### 本地启动项目
