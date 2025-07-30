@@ -9,7 +9,7 @@ import {ActionItem} from "@ant-design/x/es/actions/interface";
 /**
  * 聊天气泡底部操作区
  */
-const BubbleFooter = ({content}: { content: string }) => {
+const BubbleActions = ({content}: { content: string }) => {
     const [messageApi, contextHolder] = message.useMessage();
 
     const actionItems: ActionsProps['items'] = [
@@ -44,4 +44,4 @@ const BubbleFooter = ({content}: { content: string }) => {
     );
 };
 
-export default BubbleFooter;
+export default BubbleActions;

@@ -2,23 +2,21 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import SidebarTrigger from "@/components/sidebar-trigger";
-import {Button, Flex, message as apiMessage, Space, theme, Tooltip, Typography} from "antd";
+import {Button, Flex, message as apiMessage, theme, Tooltip} from "antd";
 import {Bubble, Sender, useXAgent, useXChat} from "@ant-design/x";
 import OpenAI from "openai";
 import {
-    CopyOutlined,
-    DislikeOutlined,
-    DownOutlined, GlobalOutlined,
-    LikeOutlined,
-    NodeIndexOutlined, PaperClipOutlined,
-    UpOutlined
+    GlobalOutlined,
+    NodeIndexOutlined,
+    PaperClipOutlined,
 } from "@ant-design/icons";
 import {DeepSeekIcon} from "@/components/Icons";
 import MarkdownRender from "@/components/markdown-render";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
 import InitWelcome from "@/components/init-welcome";
 import {useChat} from "@/provider/chat-provider";
-import BubbleFooter from "@/components/bubble-footer";
+import BubbleActions from "@/components/bubble-actions";
+import BubbleThinking from "@/components/bubble-thinking";
 
 
 
@@ -138,40 +136,6 @@ const ChatMessage = (
         }
     }, [activeKey])
 
-    /**
-     * 思考过程
-     */
-    const MessageHeader = ({reasoningContent}: {reasoningContent: string} ) => {
-        const [open, setOpen] = useState<boolean>(true)
-
-        return (reasoningContent &&
-            <Flex vertical>
-                <Button
-                    style={{
-                        width: '130px',
-                        marginBottom: '5px',
-                        borderRadius: token.borderRadiusLG,
-                    }}
-                    color="default"
-                    variant="filled"
-                    onClick={() => setOpen(!open)}
-                >
-                    <NodeIndexOutlined/>
-                    {'深度思考'}
-                    {open ? <UpOutlined style={{fontSize: '10px'}}/>
-                        : <DownOutlined style={{fontSize: '10px'}}/>}
-                </Button>
-                {open &&
-                    <div className='max-w-[600px] border-l-2 border-l-gray-100 my-2 mr-2 pl-4'>
-                        <Typography.Text type='secondary'>
-                            {reasoningContent}
-                        </Typography.Text>
-                    </div>
-                }
-            </Flex>
-        )
-    }
-
     const messageItems = messages.map((
         {id, message, status}) =>
         ({
@@ -179,9 +143,9 @@ const ChatMessage = (
             content: message.content || '',
             role: status === 'local' ? 'user' : 'ai',
             loading: status === 'loading' && requestLoading,
-            header: (status !== 'local' && <MessageHeader reasoningContent={message.reasoningContent || ''}/>),
+            header: (status !== 'local' && <BubbleThinking content={message.reasoningContent || ''}/>),
             footer: ((!agent.isRequesting() && status !== 'local') &&
-                <BubbleFooter content={message.content || ''}/>
+                <BubbleActions content={message.content || ''}/>
             ),
             placement: status !== 'local' ? 'start' : 'end',
             variant: status !== 'local' ? (message.content ? 'outlined' : 'borderless') : undefined,
