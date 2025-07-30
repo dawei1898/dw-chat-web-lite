@@ -37,6 +37,21 @@ export type AgentMessage = {
     reasoningContent?: string;
 };
 
+type InputType = {
+    message: AgentMessage,
+    messages: AgentMessage[]
+}
+
+type MessageType = {
+    content?: string;
+    reasoningContent?: string;
+};
+
+type OutputType = {
+    content?: string;
+    reasoningContent?: string;
+};
+
 
 
 interface ChatMessageProps {
@@ -50,8 +65,6 @@ const ChatMessage = (
     const {activeKey, openReasoner, openSearch, setOpenReasoner, setOpenSearch} = useChat();
     const [inputTxt, setInputTxt] = useState<string>('')
     const [requestLoading, setRequestLoading] = useState<boolean>(false)
-    //const [openSearch, setOpenSearch] = useState<boolean>(false)
-    //const [openReasoner, setOpenReasoner] = useState<boolean>(false)
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
@@ -60,7 +73,7 @@ const ChatMessage = (
     /**
      * 与大模型交互
      */
-    const [agent] = useXAgent<AgentMessage>({
+    const [agent] = useXAgent<AgentMessage, InputType, AgentMessage>({
         request: async (info, callbacks) => {
             const {message, messages} = info
             const {onUpdate, onSuccess, onError} = callbacks
@@ -96,7 +109,7 @@ const ChatMessage = (
                     onUpdate(aiMessage)
                 }
 
-                onSuccess(aiMessage)
+                onSuccess([aiMessage])
             } catch (e) {
                 console.log('error', e);
                 onError(e as Error);
@@ -106,7 +119,7 @@ const ChatMessage = (
         }
     });
 
-    const {onRequest, messages, setMessages} = useXChat({
+    const {onRequest, messages, setMessages} = useXChat<AgentMessage, AgentMessage, InputType, AgentMessage>({
         agent: agent,
         requestPlaceholder: {
             content: '请求中...'
