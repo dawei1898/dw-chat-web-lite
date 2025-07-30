@@ -13,12 +13,12 @@ import {
     NodeIndexOutlined, PaperClipOutlined,
     UpOutlined
 } from "@ant-design/icons";
-import {writeText} from "clipboard-polyfill";
 import {DeepSeekIcon} from "@/components/Icons";
 import MarkdownRender from "@/components/markdown-render";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
 import InitWelcome from "@/components/init-welcome";
 import {useChat} from "@/provider/chat-provider";
+import BubbleFooter from "@/components/bubble-footer";
 
 
 
@@ -172,33 +172,6 @@ const ChatMessage = (
         )
     }
 
-    const MessageFooter = ({message}: {message: string}) => {
-        return <Space>
-            <Tooltip title='喜欢'>
-                <Button
-                    size={'small'} type={'text'} icon={<LikeOutlined/>}
-                    onClick={() => apiMessage.success('感谢您的支持')}
-                />
-            </Tooltip>
-            <Tooltip title='不喜欢'>
-                <Button
-                    size={'small'} type={'text'} icon={<DislikeOutlined/>}
-                    onClick={() => apiMessage.info('感谢您的反馈')}
-                />
-            </Tooltip>
-            <Tooltip title='复制'>
-                <Button
-                    size={'small'} type={'text'} icon={<CopyOutlined/>}
-                    onClick={() => {
-                        writeText(message);
-                        apiMessage.success('已复制');
-                    }}
-                />
-            </Tooltip>
-        </Space>
-    }
-
-
     const messageItems = messages.map((
         {id, message, status}) =>
         ({
@@ -208,7 +181,7 @@ const ChatMessage = (
             loading: status === 'loading' && requestLoading,
             header: (status !== 'local' && <MessageHeader reasoningContent={message.reasoningContent || ''}/>),
             footer: ((!agent.isRequesting() && status !== 'local') &&
-                <MessageFooter message={message.content || ''}/>
+                <BubbleFooter content={message.content || ''}/>
             ),
             placement: status !== 'local' ? 'start' : 'end',
             variant: status !== 'local' ? (message.content ? 'outlined' : 'borderless') : undefined,
