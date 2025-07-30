@@ -9,6 +9,10 @@ interface ChatContextType {
     setOpen: (val: boolean) => void;
     activeKey: string;
     setActiveKey: (val: string) => void;
+    openReasoner: boolean;
+    setOpenReasoner: (val: boolean) => void;
+    openSearch: boolean;
+    setOpenSearch: (val: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -30,12 +34,18 @@ const ChatProvider = (
 
     const [collapsed, setCollapsed] = useState(false);
     const [activeValue, setActiveValue] = useState<string>('')
+    const [search, setSearch] = useState<boolean>(false)
+    const [reasoner, setReasoner] = useState<boolean>(false)
 
     const value = {
         open: collapsed,
         setOpen: setCollapsed,
         activeKey: activeValue,
         setActiveKey: setActiveValue,
+        openReasoner: reasoner,
+        setOpenReasoner: setReasoner,
+        openSearch: search,
+        setOpenSearch: setSearch,
     }
 
     return (

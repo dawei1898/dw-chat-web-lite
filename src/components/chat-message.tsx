@@ -2,23 +2,17 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import SidebarTrigger from "@/components/sidebar-trigger";
-import {Button, Flex, message as apiMessage, Space, theme, Tooltip, Typography} from "antd";
+import {Flex, message as apiMessage} from "antd";
 import {Bubble, Sender, useXAgent, useXChat} from "@ant-design/x";
 import OpenAI from "openai";
-import {
-    CopyOutlined,
-    DislikeOutlined,
-    DownOutlined, GlobalOutlined,
-    LikeOutlined,
-    NodeIndexOutlined, PaperClipOutlined,
-    UpOutlined
-} from "@ant-design/icons";
-import {writeText} from "clipboard-polyfill";
 import {DeepSeekIcon} from "@/components/Icons";
 import MarkdownRender from "@/components/markdown-render";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
 import InitWelcome from "@/components/init-welcome";
 import {useChat} from "@/provider/chat-provider";
+import BubbleActions from "@/components/bubble-actions";
+import BubbleThinking from "@/components/bubble-thinking";
+import SenderActions, {ActionsComponents} from "@/components/sender-actions";
 
 
 
@@ -43,7 +37,20 @@ export type AgentMessage = {
     reasoningContent?: string;
 };
 
-const {useToken} = theme;
+type InputType = {
+    message: AgentMessage,
+    messages: AgentMessage[]
+}
+
+type MessageType = {
+    content?: string;
+    reasoningContent?: string;
+};
+
+type OutputType = {
+    content?: string;
+    reasoningContent?: string;
+};
 
 
 
@@ -54,12 +61,10 @@ interface ChatMessageProps {
 const ChatMessage = (
     {handleAddConversation}: ChatMessageProps
 ) => {
-    const {token} = useToken();
-    const {activeKey} = useChat();
+
+    const {activeKey, openReasoner, openSearch, setOpenReasoner, setOpenSearch} = useChat();
     const [inputTxt, setInputTxt] = useState<string>('')
     const [requestLoading, setRequestLoading] = useState<boolean>(false)
-    const [openSearch, setOpenSearch] = useState<boolean>(false)
-    const [openReasoner, setOpenReasoner] = useState<boolean>(false)
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
@@ -68,7 +73,7 @@ const ChatMessage = (
     /**
      * 与大模型交互
      */
-    const [agent] = useXAgent<AgentMessage>({
+    const [agent] = useXAgent<AgentMessage, InputType, AgentMessage>({
         request: async (info, callbacks) => {
             const {message, messages} = info
             const {onUpdate, onSuccess, onError} = callbacks
@@ -104,7 +109,7 @@ const ChatMessage = (
                     onUpdate(aiMessage)
                 }
 
-                onSuccess(aiMessage)
+                onSuccess([aiMessage])
             } catch (e) {
                 console.log('error', e);
                 onError(e as Error);
@@ -114,7 +119,7 @@ const ChatMessage = (
         }
     });
 
-    const {onRequest, messages, setMessages} = useXChat({
+    const {onRequest, messages, setMessages} = useXChat<AgentMessage, AgentMessage, InputType, AgentMessage>({
         agent: agent,
         requestPlaceholder: {
             content: '请求中...'
@@ -138,67 +143,6 @@ const ChatMessage = (
         }
     }, [activeKey])
 
-    /**
-     * 思考过程
-     */
-    const MessageHeader = ({reasoningContent}: {reasoningContent: string} ) => {
-        const [open, setOpen] = useState<boolean>(true)
-
-        return (reasoningContent &&
-            <Flex vertical>
-                <Button
-                    style={{
-                        width: '130px',
-                        marginBottom: '5px',
-                        borderRadius: token.borderRadiusLG,
-                    }}
-                    color="default"
-                    variant="filled"
-                    onClick={() => setOpen(!open)}
-                >
-                    <NodeIndexOutlined/>
-                    {'深度思考'}
-                    {open ? <UpOutlined style={{fontSize: '10px'}}/>
-                        : <DownOutlined style={{fontSize: '10px'}}/>}
-                </Button>
-                {open &&
-                    <div className='max-w-[600px] border-l-2 border-l-gray-100 my-2 mr-2 pl-4'>
-                        <Typography.Text type='secondary'>
-                            {reasoningContent}
-                        </Typography.Text>
-                    </div>
-                }
-            </Flex>
-        )
-    }
-
-    const MessageFooter = ({message}: {message: string}) => {
-        return <Space>
-            <Tooltip title='喜欢'>
-                <Button
-                    size={'small'} type={'text'} icon={<LikeOutlined/>}
-                    onClick={() => apiMessage.success('感谢您的支持')}
-                />
-            </Tooltip>
-            <Tooltip title='不喜欢'>
-                <Button
-                    size={'small'} type={'text'} icon={<DislikeOutlined/>}
-                    onClick={() => apiMessage.info('感谢您的反馈')}
-                />
-            </Tooltip>
-            <Tooltip title='复制'>
-                <Button
-                    size={'small'} type={'text'} icon={<CopyOutlined/>}
-                    onClick={() => {
-                        writeText(message);
-                        apiMessage.success('已复制');
-                    }}
-                />
-            </Tooltip>
-        </Space>
-    }
-
-
     const messageItems = messages.map((
         {id, message, status}) =>
         ({
@@ -206,9 +150,9 @@ const ChatMessage = (
             content: message.content || '',
             role: status === 'local' ? 'user' : 'ai',
             loading: status === 'loading' && requestLoading,
-            header: (status !== 'local' && <MessageHeader reasoningContent={message.reasoningContent || ''}/>),
+            header: (status !== 'local' && <BubbleThinking content={message.reasoningContent || ''}/>),
             footer: ((!agent.isRequesting() && status !== 'local') &&
-                <MessageFooter message={message.content || ''}/>
+                <BubbleActions content={message.content || ''}/>
             ),
             placement: status !== 'local' ? 'start' : 'end',
             variant: status !== 'local' ? (message.content ? 'outlined' : 'borderless') : undefined,
@@ -240,69 +184,6 @@ const ChatMessage = (
             content: (<InitWelcome handleSubmit={handleSubmit}/>),
             variant: 'borderless'
         }];
-
-
-    /* 自定义发送框底部 */
-    const senderFooter =  ({components}: any) => {
-        const {SendButton, LoadingButton, SpeechButton} = components;
-
-        return (
-            <Flex justify='space-between' align='center'>
-                <Flex gap='small'>
-                    <Tooltip
-                        title={openReasoner ? '' : '调用新模型 DeepSeek-R1，解决推理问题'}
-                        placement='left'
-                    >
-                        <Button
-                            size='small'
-                            shape='round'
-                            type={openReasoner ? 'primary' : 'default'}
-                            onClick={() => setOpenReasoner(!openReasoner)}
-                        >
-                            <NodeIndexOutlined />
-                            深度思考(R1)
-                        </Button>
-                    </Tooltip>
-                    <Tooltip
-                        title={openSearch ? '' : '按需搜索网页'}
-                        placement='right'
-                    >
-                        <Button
-                            size='small'
-                            shape='round'
-                            type={openSearch ? 'primary' : 'default'}
-                            onClick={() => setOpenSearch(!openSearch)}
-                        >
-                            <GlobalOutlined />
-                            联网搜索
-                        </Button>
-                    </Tooltip>
-                </Flex>
-
-                <Flex  align='center' gap='small'>
-                    <Tooltip title={'上传附件'} placement='top'>
-                        <Button
-                            type='text'
-                            icon={<PaperClipOutlined rotate={135} style={{fontSize: '18px', marginTop: '7px'}}/>}
-                        />
-                    </Tooltip>
-                    {
-                        !agent.isRequesting() ?
-                            (
-                                <Tooltip title={inputTxt ? '发送' : '请输入你的问题'}>
-                                    <SendButton/>
-                                </Tooltip>)
-                            : (
-                                <Tooltip title='停止'>
-                                    <LoadingButton/>
-                                </Tooltip>
-                            )
-                    }
-                </Flex>
-
-            </Flex>
-        );
-    }
 
 
     // 停止
@@ -353,7 +234,13 @@ const ChatMessage = (
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 actions={false}
-                footer={senderFooter}
+                footer={(info: { components: ActionsComponents }) =>
+                    <SenderActions
+                        components={info.components}
+                        inputTxt={inputTxt}
+                        loading={agent.isRequesting()}
+                    />
+                }
             />
         </Flex>
     </>);
