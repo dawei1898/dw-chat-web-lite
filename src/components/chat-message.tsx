@@ -2,14 +2,9 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import SidebarTrigger from "@/components/sidebar-trigger";
-import {Button, Flex, message as apiMessage, theme, Tooltip} from "antd";
+import {Flex, message as apiMessage} from "antd";
 import {Bubble, Sender, useXAgent, useXChat} from "@ant-design/x";
 import OpenAI from "openai";
-import {
-    GlobalOutlined,
-    NodeIndexOutlined,
-    PaperClipOutlined,
-} from "@ant-design/icons";
 import {DeepSeekIcon} from "@/components/Icons";
 import MarkdownRender from "@/components/markdown-render";
 import {BubbleDataType} from "@ant-design/x/es/bubble/BubbleList";
@@ -17,6 +12,7 @@ import InitWelcome from "@/components/init-welcome";
 import {useChat} from "@/provider/chat-provider";
 import BubbleActions from "@/components/bubble-actions";
 import BubbleThinking from "@/components/bubble-thinking";
+import SenderActions, {ActionsComponents} from "@/components/sender-actions";
 
 
 
@@ -41,8 +37,6 @@ export type AgentMessage = {
     reasoningContent?: string;
 };
 
-const {useToken} = theme;
-
 
 
 interface ChatMessageProps {
@@ -52,12 +46,12 @@ interface ChatMessageProps {
 const ChatMessage = (
     {handleAddConversation}: ChatMessageProps
 ) => {
-    const {token} = useToken();
-    const {activeKey} = useChat();
+
+    const {activeKey, openReasoner, openSearch, setOpenReasoner, setOpenSearch} = useChat();
     const [inputTxt, setInputTxt] = useState<string>('')
     const [requestLoading, setRequestLoading] = useState<boolean>(false)
-    const [openSearch, setOpenSearch] = useState<boolean>(false)
-    const [openReasoner, setOpenReasoner] = useState<boolean>(false)
+    //const [openSearch, setOpenSearch] = useState<boolean>(false)
+    //const [openReasoner, setOpenReasoner] = useState<boolean>(false)
     const [model, setModel] = useState<string>(MODEL_CHAT)
     const modelRef = useRef(model);
     const abortControllerRef = useRef<AbortController>(null);
@@ -179,69 +173,6 @@ const ChatMessage = (
         }];
 
 
-    /* 自定义发送框底部 */
-    const senderFooter =  ({components}: any) => {
-        const {SendButton, LoadingButton, SpeechButton} = components;
-
-        return (
-            <Flex justify='space-between' align='center'>
-                <Flex gap='small'>
-                    <Tooltip
-                        title={openReasoner ? '' : '调用新模型 DeepSeek-R1，解决推理问题'}
-                        placement='left'
-                    >
-                        <Button
-                            size='small'
-                            shape='round'
-                            type={openReasoner ? 'primary' : 'default'}
-                            onClick={() => setOpenReasoner(!openReasoner)}
-                        >
-                            <NodeIndexOutlined />
-                            深度思考(R1)
-                        </Button>
-                    </Tooltip>
-                    <Tooltip
-                        title={openSearch ? '' : '按需搜索网页'}
-                        placement='right'
-                    >
-                        <Button
-                            size='small'
-                            shape='round'
-                            type={openSearch ? 'primary' : 'default'}
-                            onClick={() => setOpenSearch(!openSearch)}
-                        >
-                            <GlobalOutlined />
-                            联网搜索
-                        </Button>
-                    </Tooltip>
-                </Flex>
-
-                <Flex  align='center' gap='small'>
-                    <Tooltip title={'上传附件'} placement='top'>
-                        <Button
-                            type='text'
-                            icon={<PaperClipOutlined rotate={135} style={{fontSize: '18px', marginTop: '7px'}}/>}
-                        />
-                    </Tooltip>
-                    {
-                        !agent.isRequesting() ?
-                            (
-                                <Tooltip title={inputTxt ? '发送' : '请输入你的问题'}>
-                                    <SendButton/>
-                                </Tooltip>)
-                            : (
-                                <Tooltip title='停止'>
-                                    <LoadingButton/>
-                                </Tooltip>
-                            )
-                    }
-                </Flex>
-
-            </Flex>
-        );
-    }
-
-
     // 停止
     const handleCancel = () => {
         setRequestLoading(false);
@@ -290,7 +221,13 @@ const ChatMessage = (
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 actions={false}
-                footer={senderFooter}
+                footer={(info: { components: ActionsComponents }) =>
+                    <SenderActions
+                        components={info.components}
+                        inputTxt={inputTxt}
+                        loading={agent.isRequesting()}
+                    />
+                }
             />
         </Flex>
     </>);
